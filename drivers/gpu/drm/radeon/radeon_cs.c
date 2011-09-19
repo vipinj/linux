@@ -217,12 +217,15 @@ static void radeon_cs_parser_fini(struct radeon_cs_parser *parser, int error)
 
 int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 {
+	extern int ctvar;
+	ctvar+=1;
+	printk("vipin2_radeon_cs_ioctl_called\n");
 	struct radeon_device *rdev = dev->dev_private;
 	struct radeon_cs_parser parser;
 	struct radeon_cs_chunk *ib_chunk;
 	int r;
-
-	mutex_lock(&rdev->cs_mutex);
+	
+//	mutex_lock(&rdev->cs_mutex);
 	/* initialize parser */
 	memset(&parser, 0, sizeof(struct radeon_cs_parser));
 	parser.filp = filp;
@@ -233,14 +236,14 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 	if (r) {
 		DRM_ERROR("Failed to initialize parser !\n");
 		radeon_cs_parser_fini(&parser, r);
-		mutex_unlock(&rdev->cs_mutex);
+//		mutex_unlock(&rdev->cs_mutex);
 		return r;
 	}
 	r =  radeon_ib_get(rdev, &parser.ib);
 	if (r) {
 		DRM_ERROR("Failed to get ib !\n");
 		radeon_cs_parser_fini(&parser, r);
-		mutex_unlock(&rdev->cs_mutex);
+//		mutex_unlock(&rdev->cs_mutex);
 		return r;
 	}
 	r = radeon_cs_parser_relocs(&parser);
@@ -248,7 +251,7 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 		if (r != -ERESTARTSYS)
 			DRM_ERROR("Failed to parse relocation %d!\n", r);
 		radeon_cs_parser_fini(&parser, r);
-		mutex_unlock(&rdev->cs_mutex);
+//		mutex_unlock(&rdev->cs_mutex);
 		return r;
 	}
 	/* Copy the packet into the IB, the parser will read from the
@@ -260,22 +263,24 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 	if (r || parser.parser_error) {
 		DRM_ERROR("Invalid command stream !\n");
 		radeon_cs_parser_fini(&parser, r);
-		mutex_unlock(&rdev->cs_mutex);
+//		mutex_unlock(&rdev->cs_mutex);
 		return r;
 	}
 	r = radeon_cs_finish_pages(&parser);
 	if (r) {
 		DRM_ERROR("Invalid command stream !\n");
 		radeon_cs_parser_fini(&parser, r);
-		mutex_unlock(&rdev->cs_mutex);
+//		mutex_unlock(&rdev->cs_mutex);
 		return r;
 	}
+	if(ctvar == 10){
 	r = radeon_ib_schedule(rdev, parser.ib);
 	if (r) {
 		DRM_ERROR("Failed to schedule IB !\n");
 	}
 	radeon_cs_parser_fini(&parser, r);
-	mutex_unlock(&rdev->cs_mutex);
+//	mutex_unlock(&rdev->cs_mutex);
+	return r;}
 	return r;
 }
 
