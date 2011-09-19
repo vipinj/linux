@@ -76,6 +76,8 @@ int console_printk[4] = {
 int oops_in_progress;
 EXPORT_SYMBOL(oops_in_progress);
 
+int ctvar;
+EXPORT_SYMBOL(ctvar);
 /*
  * console_sem protects the console_drivers list, and also
  * provides serialisation for access to the entire console
